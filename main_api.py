@@ -25,6 +25,16 @@ app.add_middleware(
 
 DATA_PATH = os.path.join("scraped_data", "scraped_data.json")
 
+# AUTHORITATIVE 6-SOURCE WHITELIST
+EXPERT_SOURCES = [
+    "https://my.clevelandclinic.org/health/body/25201-gut-microbiome",
+    "https://www.healthline.com/nutrition/gut-microbiome-and-health",
+    "https://www.medicalnewstoday.com/articles/323093",
+    "https://www.youtube.com/watch?v=1sISguPDlhY",
+    "https://www.youtube.com/watch?v=VzPD009qTN4",
+    "https://pubmed.ncbi.nlm.nih.gov/29902436/"
+]
+
 class AnalyzeRequest(BaseModel):
     url: str
 
@@ -35,11 +45,11 @@ def load_registry() -> List[Dict[str, Any]]:
             with open(DATA_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    # STRICT FILTER: Ensure we only keep the 6 high-fidelity defaults 
-                    # and any newly analyzed valid entries. Remove stale "Unknown" blogs.
+                    # ABSOLUTE FILTER: Only allow the 6 pre-verified Expert Sources
+                    # This permanently purges stale entries like 'NHS' or 'Unknown' blogs.
                     return [
                         s for s in data 
-                        if not (s.get('title') == "Unknown" and s.get('source_type') == "blog")
+                        if s.get('source_url') in EXPERT_SOURCES
                     ]
         except Exception as e:
             print(f"Error loading registry: {e}")
