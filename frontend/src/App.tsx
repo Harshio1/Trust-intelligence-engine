@@ -22,7 +22,7 @@ export default function App() {
   const [sources, setSources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSources, setSelectedSources] = useState(['blog', 'youtube', 'pubmed'])
-  const [minTrust, setMinTrust] = useState(0.5)
+  const [minTrust, setMinTrust] = useState(0.0)
   const [searchQuery, setSearchQuery] = useState('')
   
   // Real-time Analysis State
@@ -248,7 +248,7 @@ export default function App() {
                         <span className="text-[#00c9ff] font-bold">{minTrust.toFixed(2)}</span>
                     </div>
                     <input 
-                        type="range" min="0.2" max="1.0" step="0.05"
+                        type="range" min="0.0" max="1.0" step="0.05"
                         value={minTrust}
                         onChange={(e) => setMinTrust(parseFloat(e.target.value))}
                         className="w-full accent-[#00c9ff] h-1 bg-white/5 rounded-full appearance-none cursor-pointer"
