@@ -54,18 +54,27 @@ export default function App() {
     setError(null)
 
     try {
-      const res = await axios.post(`${BASE_URL}/api/analyze`, { url: inputUrl })
-      const newSource = { ...res.data, isNew: true }
-      
-      // Update sources immediately
-      setSources(prev => [newSource, ...prev])
-      setInputUrl('')
-      
-      // Auto-scroll to the top to see the new entry
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      const response = await fetch(`${BASE_URL}/api/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: inputUrl })
+      })
+      const result = await response.json()
+
+      if (result && !result.error) {
+        const newSource = { ...result, isNew: true }
+        // Prepend new result to sources immediately
+        setSources(prev => Array.isArray(prev) ? [newSource, ...prev] : [newSource])
+        setInputUrl('')
+        
+        // Auto-scroll to the top to see the new entry
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        throw new Error(result.error || 'Failed to analyze source')
+      }
     } catch (err: any) {
       console.error('Analysis error:', err)
-      setError(err.response?.data?.detail || 'Analysis engine unreachable. Ensure server is running.')
+      setError(err.message || 'Analysis engine unreachable. Ensure server is running.')
       setTimeout(() => setError(null), 5000)
     } finally {
       setIsAnalyzing(false)
