@@ -8,7 +8,6 @@ import {
   Download, 
   Copy, 
   Check, 
-  ShieldCheck, 
   Activity,
   AlertTriangle,
   Clock,
