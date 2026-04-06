@@ -19,7 +19,7 @@ import {
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function App() {
-  const [data, setData] = useState<any[]>([])
+  const [sources, setSources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedSources, setSelectedSources] = useState(['blog', 'youtube', 'pubmed'])
   const [minTrust, setMinTrust] = useState(0.5)
@@ -34,9 +34,11 @@ export default function App() {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${BASE_URL}/api/scraped`)
-        setData(res.data)
+        const data = res.data
+        setSources(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error('Error fetching data:', err)
+        setSources([])
       } finally {
         setTimeout(() => setLoading(false), 800) // Smooth intro
       }
@@ -54,8 +56,11 @@ export default function App() {
     try {
       const res = await axios.post(`${BASE_URL}/api/analyze`, { url: inputUrl })
       const newSource = { ...res.data, isNew: true }
-      setData(prev => [newSource, ...prev])
+      
+      // Update sources immediately
+      setSources(prev => [newSource, ...prev])
       setInputUrl('')
+      
       // Auto-scroll to the top to see the new entry
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err: any) {
@@ -68,8 +73,8 @@ export default function App() {
   }
 
   const filteredData = useMemo(() => {
-    if (!Array.isArray(data)) return []
-    return data.filter(item => {
+    if (!Array.isArray(sources)) return []
+    return sources.filter(item => {
       const matchSource = selectedSources.includes(item.source_type)
       const matchTrust = item.trust_score >= minTrust
       const matchSearch = 
@@ -78,19 +83,20 @@ export default function App() {
       
       return matchSource && matchTrust && matchSearch
     })
-  }, [data, selectedSources, minTrust, searchQuery])
+  }, [sources, selectedSources, minTrust, searchQuery])
 
   const stats = useMemo(() => {
-    if (!Array.isArray(data) || !data.length) return { avg: 0, total: 0 }
-    const avg = data.reduce((acc, curr) => acc + curr.trust_score, 0) / data.length
+    if (!Array.isArray(sources) || !sources.length) return { avg: 0, total: 0 }
+    const totalTrust = sources.reduce((sum, s) => sum + (s.trust_score || 0), 0)
+    const avg = totalTrust / sources.length
     return { 
       avg: (avg).toFixed(2), 
-      total: data.length
+      total: sources.length
     }
-  }, [data])
+  }, [sources])
 
   const downloadJson = () => {
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(sources, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url; a.download = 'gutbut_master_registry.json'; a.click()
