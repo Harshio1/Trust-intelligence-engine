@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+requests
+beautifulsoup4
+keybert
+youtube-transcript-api
+pandas
+langdetect
+biopython
+python-multipart

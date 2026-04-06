@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-[#0b0d11] text-[#e1e1e1] antialiased overflow-x-hidden;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+}
+
+/* Base Scrollbar - Extra Thin */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/5 rounded-full hover:bg-white/10 transition-all;
+}
+
+/* Diagnostic Dashboard Styles */
+.diagnostic-container {
+  @apply max-w-7xl mx-auto px-8 py-10 flex flex-col gap-8;
+}
+
+.diagnostic-card {
+  @apply bg-[#151921]/50 backdrop-blur-2xl border border-white/5 rounded-3xl overflow-hidden transition-all duration-500 hover:border-white/10 shadow-2xl shadow-black/20;
+}
+
+.glass-panel {
+  @apply bg-white/[0.01] backdrop-blur-3xl border border-white/[0.03];
+}
+
+.text-muted {
+  @apply text-white/30;
+}
+
+.text-label {
+  @apply text-[9px] font-black uppercase tracking-[0.3em] text-white/15;
+}
+
+.btn-diagnostic {
+  @apply flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply bg-[#00c9ff] text-black hover:shadow-[0_0_15px_rgba(0,201,255,0.2)] hover:scale-[1.01];
+}
+
+.btn-secondary {
+  @apply bg-white/5 text-white/60 hover:bg-white/10 border border-white/5;
+}
+
+.status-high { @apply text-emerald-400 bg-emerald-400/5 border-emerald-400/10; }
+.status-medium { @apply text-amber-400 bg-amber-400/5 border-amber-400/10; }
+.status-low { @apply text-rose-400 bg-rose-400/5 border-rose-400/10; }
+
+.status-high-bg { @apply bg-emerald-500/60; }
+.status-medium-bg { @apply bg-amber-500/60; }
+.status-low-bg { @apply bg-rose-500/60; }
+
+/* Grid Utilities - High Density */
+.info-matrix {
+  @apply flex flex-wrap gap-10 py-6 border-y border-white/5 bg-white/[0.01];
+}
+
+/* DNA Container */
+.dna-container {
+  @apply w-48 h-full absolute -right-4 top-0 pointer-events-none;
+}
+
+/* Animation Utilities */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.2; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}

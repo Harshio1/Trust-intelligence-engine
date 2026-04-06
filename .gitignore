@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+*.log
+scrape_log.txt
+
+# Project specific
+output/
+scraped_data/
+yt_sample.html
+yt_sample_large.html
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
