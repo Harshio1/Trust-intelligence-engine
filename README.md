@@ -1,6 +1,6 @@
 # GutBut Trust Intelligence Engine
 
-##🌐 Live Demo
+## 🌐 Live Demo
 
 The project is fully deployed and accessible at:
 👉 https://trust-intelligence-engine-1.onrender.com
