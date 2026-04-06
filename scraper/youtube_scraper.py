@@ -44,18 +44,19 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
             res = requests.get(url, headers=headers, cookies=cookies, timeout=15)
             html = res.text
             
-            # 1. Primary Method: ytInitialPlayerResponse
-            json_match = re.search(r'ytInitialPlayerResponse\s*=\s*({.*?});', html)
+            # 1. Primary Method: ytInitialPlayerResponse (Added re.DOTALL for safety)
+            json_match = re.search(r'ytInitialPlayerResponse\s*=\s*({.*?});', html, re.DOTALL)
             if json_match:
                 try:
-                    player_response = json.loads(json_match.group(1))
+                    json_str = json_match.group(1)
+                    player_response = json.loads(json_str)
                     video_details = player_response.get('videoDetails', {})
-                    metadata["title"] = video_details.get('title', metadata["title"])
-                    metadata["channel"] = video_details.get('author', metadata["channel"])
-                    metadata["description"] = video_details.get('shortDescription', metadata["description"])
+                    metadata["title"] = video_details.get('title') or metadata["title"]
+                    metadata["channel"] = video_details.get('author') or metadata["channel"]
+                    metadata["description"] = video_details.get('shortDescription') or metadata["description"]
                     
                     microformat = player_response.get('microformat', {}).get('playerMicroformatRenderer', {})
-                    metadata["publishDate"] = microformat.get('publishDate', metadata["publishDate"])
+                    metadata["publishDate"] = microformat.get('publishDate') or metadata["publishDate"]
                     
                     if metadata["channel"] != "Channel not available":
                         return metadata
@@ -63,11 +64,17 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
                     pass
 
             # 2. Secondary Method: ytInitialData (Deep Search)
-            data_match = re.search(r'ytInitialData\s*=\s*({.*?});', html)
+            data_match = re.search(r'ytInitialData\s*=\s*({.*?});', html, re.DOTALL)
             if data_match:
                 try:
                     initial_data = json.loads(data_match.group(1))
                     # Try to find channel in the renderer chain
+                    try:
+                        # Attempt to get title if playerResponse failed
+                        metadata["title"] = initial_data['contents']['twoColumnWatchNextResults']['results']['results']['contents'][0]['videoPrimaryInfoRenderer']['title']['runs'][0]['text']
+                    except (KeyError, IndexError):
+                        pass
+
                     try:
                         # Common path in ytInitialData for channel name
                         runs = initial_data['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']['owner']['videoOwnerRenderer']['title']['runs']
@@ -81,11 +88,11 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
                     pass
 
             # 3. Fallback: Microdata / Meta Tags
-            title_match = re.search(r'<title>(.*?)</title>', html)
+            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
             if title_match:
-                metadata["title"] = title_match.group(1).replace(" - YouTube", "").strip()
+                metadata["title"] = title_match.group(1).split(" - YouTube")[0].strip()
 
-            author_patterns = [r'"author":"(.*?)"', r'"ownerName":"(.*?)"', r'<link itemprop="name" content="(.*?)">']
+            author_patterns = [r'"author" content="(.*?)"', r'"author":"(.*?)"', r'"ownerName":"(.*?)"', r'<link itemprop="name" content="(.*?)">']
             for pattern in author_patterns:
                 match = re.search(pattern, html)
                 if match and match.group(1):
@@ -116,11 +123,29 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
     
     transcript_text = ""
     try:
-        # Standard transcript fetch
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-        transcript_text = " ".join([t['text'] for t in transcript_list])
+        # Multi-tiered transcript fetch
+        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+        
+        # Try prioritized fetch
+        try:
+            # 1. Try manual English
+            transcript = transcript_list.find_manually_created_transcript(['en'])
+        except Exception:
+            try:
+                # 2. Try any manual
+                transcript = transcript_list.find_manually_created_transcript([])
+            except Exception:
+                try:
+                    # 3. Try auto-generated English
+                    transcript = transcript_list.find_generated_transcript(['en'])
+                except Exception:
+                    # 4. Try any auto-generated
+                    transcript = transcript_list.find_generated_transcript([])
+
+        transcript_data = transcript.fetch()
+        transcript_text = " ".join([t['text'] for t in transcript_data])
     except Exception as e:
-        print(f"Could not get transcript for {video_id}: {e}")
+        print(f"Transcript discovery failed for {video_id}: {e}")
         
     full_text = metadata.get('description', '')
     
