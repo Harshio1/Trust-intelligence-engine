@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import { SourceCard } from './components/SourceCard'
+import { DNAVisual } from './components/DNAVisual'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ShieldCheck, 
@@ -140,8 +141,8 @@ export default function App() {
         {/* Balanced Hero Section */}
         <header className="relative flex min-h-[440px] items-center p-12 diagnostic-card border-none bg-gradient-to-br from-[#13171f] via-[#0b0e14] to-[#080a0e] group overflow-hidden">
           {/* Constrained DNA Visual */}
-          <div className="absolute right-0 top-0 w-2/5 h-full opacity-40 group-hover:opacity-100 transition-opacity duration-1000 z-0">
-             {/* DNA Visual Removed for Performance */}
+          <div className="absolute right-[-10%] top-0 w-3/5 h-[120%] opacity-40 group-hover:opacity-80 transition-opacity duration-1000 z-0 select-none pointer-events-none">
+             <DNAVisual />
           </div>
           
           <div className="flex flex-col gap-8 relative z-10 w-3/5">
