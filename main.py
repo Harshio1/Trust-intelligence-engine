@@ -8,11 +8,11 @@ from scraper.pubmed_scraper import scrape_pubmed
 
 # GUT-HEALTH SOURCE POOLS (Priority + Fallbacks)
 BLOG_SOURCES = [
-    "https://theconversation.com/gut-microbes-and-their-role-in-health-60523",
-    "https://theconversation.com/a-healthy-gut-microbiome-is-linked-to-a-longer-life-156382",
-    "https://theconversation.com/how-the-gut-microbiome-can-impact-how-we-respond-to-cancer-treatment-191244", # High quality source
     "https://my.clevelandclinic.org/health/body/25201-gut-microbiome", 
-    "https://www.healthline.com/nutrition/gut-microbiome-and-health"
+    "https://www.healthline.com/nutrition/gut-microbiome-and-health",
+    "https://www.medicalnewstoday.com/articles/323093",
+    "https://www.hopkinsmedicine.org/health/wellness-and-prevention/the-brain-gut-connection",
+    "https://www.hsph.harvard.edu/nutritionsource/microbiome/"
 ]
 
 YOUTUBE_SOURCES = [

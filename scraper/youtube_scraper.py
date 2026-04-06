@@ -123,27 +123,19 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
     
     transcript_text = ""
     try:
-        # Multi-tiered transcript fetch
-        transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-        
-        # Try prioritized fetch
+        # Compatible transcript fetch
         try:
-            # 1. Try manual English
-            transcript = transcript_list.find_manually_created_transcript(['en'])
+            # 1. Try manual or auto English
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
         except Exception:
             try:
-                # 2. Try any manual
-                transcript = transcript_list.find_manually_created_transcript([])
+                # 2. Try any available
+                transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
             except Exception:
-                try:
-                    # 3. Try auto-generated English
-                    transcript = transcript_list.find_generated_transcript(['en'])
-                except Exception:
-                    # 4. Try any auto-generated
-                    transcript = transcript_list.find_generated_transcript([])
+                transcript_list = []
 
-        transcript_data = transcript.fetch()
-        transcript_text = " ".join([t['text'] for t in transcript_data])
+        if transcript_list:
+            transcript_text = " ".join([t['text'] for t in transcript_list])
     except Exception as e:
         print(f"Transcript discovery failed for {video_id}: {e}")
         

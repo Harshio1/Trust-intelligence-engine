@@ -96,17 +96,43 @@ def scrape_blog(url: str) -> Dict[str, Any]:
         if time_tag:
             publish_date = time_tag.get('datetime') or time_tag.get_text(strip=True)
 
-    # Remove non-content elements
-    for element in soup(["script", "style", "nav", "header", "footer", "aside"]):
+    # Remove non-content elements early
+    for element in soup(["script", "style", "nav", "header", "footer", "aside", "form", "button", "iframe"]):
         element.decompose()
         
-    # Find main article content
-    article_body = soup.find('article') or soup.find('main') or soup.body
+    # Find main article content using specific selectors for high-quality blogs (like The Conversation)
+    content_selectors = [
+        {'class': 'article-body'}, 
+        {'class': 'content-body'}, 
+        {'itemprop': 'articleBody'},
+        {'class': 'post-content'},
+        {'class': 'entry-content'}
+    ]
+    
+    article_body = None
+    for selector in content_selectors:
+        article_body = soup.find(None, attrs=selector)
+        if article_body:
+            break
+            
+    if not article_body:
+        article_body = soup.find('article') or soup.find('main') or soup.find('div', id='main-content') or soup.body
+
     if not article_body:
         full_text = ""
     else:
+        # Avoid pulling in 'Related Articles' or 'Read More' sections often found at the end of the body
+        # Many sites put these in 'aside' or specific divs - we already decomposed 'aside'
         paragraphs = article_body.find_all(['p', 'h2', 'h3'])
-        full_text = "\n\n".join([p.get_text(strip=True) for p in paragraphs if p.get_text(strip=True)])
+        
+        # Filter out very short strings or strings matching common UI patterns
+        cleaned_paragraphs = []
+        for p in paragraphs:
+            text = p.get_text(separator=' ', strip=True)
+            if len(text) > 40 and not any(x in text.lower() for x in ['read more', 'related articles', 'subscribe to', 'follow us']):
+                cleaned_paragraphs.append(text)
+        
+        full_text = "\n\n".join(cleaned_paragraphs)
 
     lang = detect_language(full_text[:1000])
     chunks = chunk_text(full_text)
