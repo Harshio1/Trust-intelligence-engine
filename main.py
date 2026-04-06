@@ -34,7 +34,7 @@ def save_json(data, filepath):
 def main():
     print("Starting Multi-source Data Ingestion + Trust Scoring Pipeline")
     
-    output_dir = "output"
+    output_dir = "scraped_data"
     os.makedirs(output_dir, exist_ok=True)
     
     # 1. Scrape Blogs (Target: 3)
@@ -104,9 +104,9 @@ def main():
     else:
         print("\n⚠️ WARNING: Missing some sources. Check logs.")
     
-    print(f"Data saved to output/scraped_data.json")
+    print(f"Data saved to {output_dir}/scraped_data.json")
     
-    print("\nPipeline completed successfully! Data saved to output/ folder.")
+    print(f"\nPipeline completed successfully! Data saved to {output_dir}/ folder.")
 
 if __name__ == "__main__":
     main()
