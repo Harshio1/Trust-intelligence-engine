@@ -92,11 +92,12 @@ export default function App() {
   const filteredData = useMemo(() => {
     if (!Array.isArray(sources)) return []
     return sources.filter(item => {
-      const matchSource = selectedSources.includes(item.source_type)
-      const matchTrust = item.trust_score >= minTrust
+      const matchSource = item?.source_type ? selectedSources.includes(item.source_type) : true
+      const matchTrust = (item?.trust_score ?? 0) >= minTrust
       const matchSearch = 
-        item.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (item.topic_tags && item.topic_tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+        (item?.author?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (item?.title?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+        (Array.isArray(item?.topic_tags) && item.topic_tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())))
       
       return matchSource && matchTrust && matchSearch
     })
