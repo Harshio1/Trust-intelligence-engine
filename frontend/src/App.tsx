@@ -140,8 +140,8 @@ export default function App() {
         
         {/* Balanced Hero Section */}
         <header className="relative flex min-h-[440px] items-center p-12 diagnostic-card border-none bg-gradient-to-br from-[#13171f] via-[#0b0e14] to-[#080a0e] group overflow-hidden">
-          {/* Premium DNA Visual */}
-          <div className="absolute right-0 top-0 w-2/5 h-full opacity-60 group-hover:opacity-100 transition-opacity duration-1000 z-0 scale-125 rotate-12">
+          {/* Premium DNA Visual - Straight and Centered */}
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2/5 h-full opacity-60 group-hover:opacity-100 transition-opacity duration-1000 z-0 scale-150">
              <DNAVisual />
           </div>
           
