@@ -1,8 +1,10 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
 fastapi
 uvicorn[standard]
 requests
 beautifulsoup4
-keybert
+keybert[lightweight]
+sentence-transformers==2.2.2
 youtube-transcript-api
 pandas
 langdetect
