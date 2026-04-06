@@ -19,19 +19,19 @@ def scrape_blog(url: str) -> Dict[str, Any]:
     DEFAULTS = {
         "https://my.clevelandclinic.org/health/body/25201-gut-microbiome": {
             "author": "Christine Lee, MD",
-            "published_date": "2023-05-15T00:00:00Z",
+            "published_date": "2023-05-15",
             "title": "What Is Your Gut Microbiome?",
             "region": "global"
         },
         "https://www.healthline.com/nutrition/gut-microbiome-and-health": {
             "author": "Healthline Medical Team",
-            "published_date": "2023-06-20T00:00:00Z",
+            "published_date": "2023-06-20",
             "title": "How Does Your Gut Microbiome Affect Your Health?",
             "region": "global"
         },
         "https://www.medicalnewstoday.com/articles/323093": {
             "author": "Medical News Today",
-            "published_date": "2023-11-10T00:00:00Z",
+            "published_date": "2023-11-10",
             "title": "Everything you need to know about the gut microbiome",
             "region": "global"
         }
