@@ -76,10 +76,8 @@ async def analyze_url(request: AnalyzeRequest):
         else:
             result = scrape_blog(url)
         
-        # Prevent duplicates and append to registry
-        if not any(s.get('source_url') == url for s in active_registry):
-            active_registry.append(result)
-
+        # Return the result immediately without persisting to the global registry
+        # This ensures the new content disappears on refresh as requested.
         return result
     except Exception as e:
         print(f"Server-side analysis error: {str(e)}")
