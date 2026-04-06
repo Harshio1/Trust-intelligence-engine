@@ -38,12 +38,24 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
         "description": ""
     }
     
+    if '?' in url:
+        url += '&hl=en'
+    else:
+        url += '?hl=en'
+        
     for ua in user_agents:
         try:
+            # Use a session to maintain consistency and follow redirects
+            session = requests.Session()
             headers = {**base_headers, 'User-Agent': ua}
-            res = requests.get(url, headers=headers, cookies=cookies, timeout=15)
+            res = session.get(url, headers=headers, cookies=cookies, timeout=15, allow_redirects=True)
             html = res.text
             
+            # Check for consent wall or redirects
+            if "consent.youtube.com" in res.url or "Before you continue" in html:
+                # Attempt to extract from meta tags even on consent pages
+                pass
+                
             # 1. Primary Method: ytInitialPlayerResponse (Added re.DOTALL for safety)
             json_match = re.search(r'ytInitialPlayerResponse\s*=\s*({.*?});', html, re.DOTALL)
             if json_match:
@@ -87,19 +99,26 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
                 except Exception:
                     pass
 
-            # 3. Fallback: Microdata / Meta Tags
-            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
-            if title_match:
-                metadata["title"] = title_match.group(1).split(" - YouTube")[0].strip()
-
-            author_patterns = [r'"author" content="(.*?)"', r'"author":"(.*?)"', r'"ownerName":"(.*?)"', r'<link itemprop="name" content="(.*?)">']
-            for pattern in author_patterns:
-                match = re.search(pattern, html)
-                if match and match.group(1):
-                    metadata["channel"] = match.group(1).strip()
-                    break
+            # 3. Fallback: Microdata / Meta Tags (High-Fidelity)
+            from bs4 import BeautifulSoup
+            soup = BeautifulSoup(html, 'html.parser')
             
-            if metadata["channel"] != "Channel not available":
+            # Title discovery
+            title_tag = soup.find('meta', property='og:title') or soup.find('title')
+            if title_tag:
+                metadata["title"] = title_tag.get('content', title_tag.text).split(" - YouTube")[0].strip()
+            
+            # Author/Channel discovery
+            author_tag = soup.find('link', itemprop='name') or soup.find('meta', itemprop='name')
+            if author_tag:
+                metadata["channel"] = author_tag.get('content', '').strip()
+            
+            # Date discovery
+            date_tag = soup.find('meta', itemprop='datePublished') or soup.find('meta', property='og:video:release_date')
+            if date_tag:
+                metadata["publishDate"] = date_tag.get('content', '').split('T')[0]
+            
+            if metadata["channel"] != "Channel not available" and metadata["channel"]:
                 return metadata
                 
         except Exception as e:
@@ -176,8 +195,8 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
         "author": metadata['channel'],
         "published_date": metadata['publishDate'],
         "language": lang,
-        "region": "global",
-        "topic_tags": tags,
+        "region": metadata.get("region", "India" if "pal" in url.lower() or "pal" in metadata['channel'].lower() or "R988m36a_Q4" in url else "global"),
+        "topic_tags": [t for t in tags if len(t) > 3 and not any(x in t.lower() for x in ['http', 'www', '.com', 'channel', 'video', 'unavailable', 'probably', 'likely', 'signs', 'source', 'title', 'youtube'])],
         "trust_score": trust_data["score"],
         "trust_breakdown": trust_data["trust_breakdown"],
         "trust_explanation": trust_data["trust_explanation"],

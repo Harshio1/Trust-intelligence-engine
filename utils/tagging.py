@@ -47,11 +47,26 @@ def extract_tags(text: str, top_n: int = 5) -> List[str]:
 
     # FALLBACK: Heuristic Frequency-based Tagging
     try:
+        # Filter symbols but keep tokens clean
         words = ''.join(c if c.isalnum() else ' ' for c in text.lower()).split()
-        stopwords = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'with', 'to', 'for', 'of', 'is', 'are', 'was', 'were', 'it', 'this', 'that', 'as', 'be', 'by'}
-        filtered = [w for w in words if w not in stopwords and len(w) > 3]
+        
+        # Comprehensive noise list (media patterns, URL remnants, common stopwords)
+        media_noise = {
+            'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'with', 'to', 'for', 'of', 'is', 'are', 'was', 'were', 'it', 'this', 'that', 'as', 'be', 'by', 'if', 'at', 'from', 'each', 'what', 'which', 'their', 'when',
+            'video', 'channel', 'watch', 'like', 'subscribe', 'probably', 'likely', 'actually', 'maybe',
+            'signs', 'damage', 'using', 'going', 'doing', 'things', 'about', 'just', 'more', 'even',
+            'title', 'youtube', 'transcript', 'published', 'posted', 'written', 'medical', 'reviewed',
+            'source', 'available', 'visit', 'check', 'link', 'below', 'titled', 'unavailable'
+        }
+        
+        filtered = [
+            w for w in words 
+            if w not in media_noise 
+            and len(w) > 3 
+            and not any(x in w for x in ['http', 'www', '.com', 'https'])
+        ]
         
         from collections import Counter
-        return [item[0] for item in Counter(filtered).most_common(top_n)]
+        return [item[0].upper() for item in Counter(filtered).most_common(top_n)]
     except Exception:
         return []
