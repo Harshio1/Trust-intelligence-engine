@@ -5,10 +5,12 @@ import json
 import os
 import re
 
-# Import scrapers
-from scraper.blog_scraper import scrape_blog
-from scraper.youtube_scraper import scrape_youtube
-from scraper.pubmed_scraper import scrape_pubmed
+try:
+    from scraper.blog_scraper import scrape_blog
+    from scraper.youtube_scraper import scrape_youtube
+    from scraper.pubmed_scraper import scrape_pubmed
+except ImportError as e:
+    print(f"Warning: Scraper import failed: {e}")
 
 app = FastAPI(title="GutBut Trust API + Dynamic Analytics")
 
