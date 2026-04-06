@@ -35,7 +35,8 @@ async def get_scraped_data():
         try:
             with open(DATA_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                return data
+                if isinstance(data, list):
+                    return data
         except Exception:
             pass
     
