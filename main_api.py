@@ -35,7 +35,12 @@ def load_registry() -> List[Dict[str, Any]]:
             with open(DATA_PATH, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list):
-                    return data
+                    # STRICT FILTER: Ensure we only keep the 6 high-fidelity defaults 
+                    # and any newly analyzed valid entries. Remove stale "Unknown" blogs.
+                    return [
+                        s for s in data 
+                        if not (s.get('title') == "Unknown" and s.get('source_type') == "blog")
+                    ]
         except Exception as e:
             print(f"Error loading registry: {e}")
     return []
