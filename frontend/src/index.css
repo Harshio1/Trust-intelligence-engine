@@ -71,11 +71,6 @@ body {
   @apply flex flex-wrap gap-10 py-6 border-y border-white/5 bg-white/[0.01];
 }
 
-/* DNA Container */
-.dna-container {
-  @apply w-48 h-full absolute -right-4 top-0 pointer-events-none;
-}
-
 /* Animation Utilities */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 0.1; }

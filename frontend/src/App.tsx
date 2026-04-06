@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import axios from 'axios'
 import { SourceCard } from './components/SourceCard'
-import { DNA } from './components/DNA'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ShieldCheck, 
@@ -69,6 +68,7 @@ export default function App() {
   }
 
   const filteredData = useMemo(() => {
+    if (!Array.isArray(data)) return []
     return data.filter(item => {
       const matchSource = selectedSources.includes(item.source_type)
       const matchTrust = item.trust_score >= minTrust
@@ -81,7 +81,7 @@ export default function App() {
   }, [data, selectedSources, minTrust, searchQuery])
 
   const stats = useMemo(() => {
-    if (!data.length) return { avg: 0, total: 0 }
+    if (!Array.isArray(data) || !data.length) return { avg: 0, total: 0 }
     const avg = data.reduce((acc, curr) => acc + curr.trust_score, 0) / data.length
     return { 
       avg: (avg).toFixed(2), 
@@ -105,9 +105,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen gap-4 bg-[#0b0d11]">
-        <div className="w-24 h-24 relative">
-             <DNA />
-        </div>
+        <Loader2 size={32} className="text-[#00c9ff] animate-spin" />
         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 animate-pulse">Initializing Trust Registry</span>
       </div>
     )
@@ -121,7 +119,7 @@ export default function App() {
         <header className="relative flex min-h-[440px] items-center p-12 diagnostic-card border-none bg-gradient-to-br from-[#13171f] via-[#0b0e14] to-[#080a0e] group overflow-hidden">
           {/* Constrained DNA Visual */}
           <div className="absolute right-0 top-0 w-2/5 h-full opacity-40 group-hover:opacity-100 transition-opacity duration-1000 z-0">
-             <DNA />
+             {/* DNA Visual Removed for Performance */}
           </div>
           
           <div className="flex flex-col gap-8 relative z-10 w-3/5">

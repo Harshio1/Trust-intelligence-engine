@@ -125,7 +125,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
            </div>
 
            <div className="flex flex-wrap gap-2 flex-grow px-4">
-              {item.topic_tags.slice(0, 4).map((tag: string, i: number) => (
+              {Array.isArray(item.topic_tags) && item.topic_tags.slice(0, 4).map((tag: string, i: number) => (
                 <span key={i} className="px-2.5 py-1 bg-white/[0.03] border border-white/5 rounded-md text-[9px] font-black text-white/30 uppercase tracking-widest">
                   #{tag}
                 </span>
@@ -157,7 +157,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                 <div className="flex flex-col gap-6">
                   <SectionLabel icon={<BarChart3 size={14} />} label="Statistical Signal Breakdown" />
                   
-                  {item.abuse_flags && item.abuse_flags.length > 0 && (
+                  {Array.isArray(item.abuse_flags) && item.abuse_flags.length > 0 && (
                     <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-2xl flex flex-wrap gap-2">
                         {item.abuse_flags.map((flag: string, i: number) => (
                           <span key={i} className="px-2 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded text-[8px] font-black uppercase tracking-widest">
@@ -168,7 +168,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                   )}
 
                   <div className="grid grid-cols-2 gap-x-10 gap-y-4">
-                    {Object.entries(item.trust_breakdown).map(([key, val]: any, i) => (
+                    {item.trust_breakdown && Object.entries(item.trust_breakdown).map(([key, val]: any, i) => (
                       <div key={i} className="flex flex-col gap-2">
                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/20">
                           <span>{key.replace('_', ' ')}</span>
@@ -191,7 +191,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                    <div className="flex flex-col gap-4">
                       <SectionLabel icon={<Check size={14} className="text-emerald-400" />} label="Source Strengths" />
                       <div className="flex flex-col gap-2">
-                         {item.strengths && item.strengths.length > 0 ? item.strengths.map((s: string, i: number) => (
+                         {Array.isArray(item.strengths) && item.strengths.length > 0 ? item.strengths.map((s: string, i: number) => (
                             <div key={i} className="flex items-start gap-2 group">
                                <ChevronRight size={12} className="text-emerald-400/50 mt-0.5 group-hover:translate-x-0.5 transition-transform" />
                                <span className="text-[10px] font-bold text-white/50 uppercase tracking-tight">{s}</span>
@@ -203,7 +203,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                    <div className="flex flex-col gap-4">
                       <SectionLabel icon={<AlertTriangle size={14} className="text-rose-400" />} label="Potential Risks" />
                       <div className="flex flex-col gap-2">
-                         {item.weaknesses && item.weaknesses.length > 0 ? item.weaknesses.map((w: string, i: number) => (
+                         {Array.isArray(item.weaknesses) && item.weaknesses.length > 0 ? item.weaknesses.map((w: string, i: number) => (
                             <div key={i} className="flex items-start gap-2 group">
                                <ChevronRight size={12} className="text-rose-400/50 mt-0.5 group-hover:translate-x-0.5 transition-transform" />
                                <span className="text-[10px] font-bold text-white/50 uppercase tracking-tight">{w}</span>
@@ -218,7 +218,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
               <div className="flex flex-col gap-6 pt-5 border-t border-white/5">
                  <SectionLabel icon={<Database size={14} />} label={`Provenance Data Fragments (${item.content_chunks.length})`} />
                  <div className="grid grid-cols-1 gap-2">
-                    {item.content_chunks.slice(0, 3).map((chunk: string, i: number) => (
+                    {Array.isArray(item.content_chunks) && item.content_chunks.slice(0, 3).map((chunk: string, i: number) => (
                       <div key={i} className="p-4 bg-white/[0.01] border border-white/5 rounded-xl flex gap-4 group hover:bg-white/[0.02] transition-colors">
                         <span className="text-[9px] font-black text-white/10 mt-0.5">0{i+1}</span>
                         <p className="text-[11px] text-white/30 leading-tight group-hover:text-white/50 transition-colors uppercase tracking-tight line-clamp-2">{chunk}</p>
