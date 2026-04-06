@@ -29,7 +29,12 @@
             "High-Authority Domain",
             "Scientifically Referenced"
         ],
-        "weaknesses": []
+        "weaknesses": [],
+        "content_chunks": [
+            "Your gut microbiome is a microscopic world within the world of your larger body. The trillions of microorganisms that live there affect each other and their environment in various ways.",
+            "Microorganisms living inside your gut — inside your intestines — make up your gut microbiome, populateed by trillions of microscopic organisms.",
+            "Bacteria in your gut help break down certain complex carbohydrates and dietary fibers that you can\u2019t break down on your own."
+        ]
     },
     {
         "source_url": "https://www.healthline.com/nutrition/gut-microbiome-and-health",
@@ -62,7 +67,12 @@
             "Scientifically Referenced",
             "Strong Medical Disclaimer"
         ],
-        "weaknesses": []
+        "weaknesses": [],
+        "content_chunks": [
+            "Microorganisms, or microbes, include bacteria, viruses, fungi, and other microscopic living things. Trillions of these exist inside your intestines.",
+            "While some bacteria are associated with disease, others are crucial for your immune system, heart, weight, and overall health.",
+            "Humans have evolved to live with microbes over millions of years. New evidence suggests higher microbiome diversity is considered good for your health."
+        ]
     },
     {
         "source_url": "https://www.medicalnewstoday.com/articles/323093",
@@ -96,6 +106,11 @@
         ],
         "weaknesses": [
             "Non-specialized domain"
+        ],
+        "content_chunks": [
+            "Protein powders are nutritional supplements that may help build muscle, repair tissue, and make enzymes and hormones.",
+            "Using protein powder may also aid weight loss and help people tone their muscles.",
+            "There are many different types of protein powder, including dairy-based and plant-based powders."
         ]
     },
     {
@@ -127,6 +142,11 @@
         "weaknesses": [
             "Non-specialized domain",
             "Outdated information"
+        ],
+        "content_chunks": [
+            "The bacteria in our guts can break down food the body can\u2019t digest, produce important nutrients, and regulate the immune system.",
+            "We can manipulate the balance of our microbes by paying attention to what we eat.",
+            "How the food you eat affects your gut - Shilpa Ravella."
         ]
     },
     {
@@ -158,6 +178,11 @@
         "weaknesses": [
             "Non-specialized domain",
             "Outdated information"
+        ],
+        "content_chunks": [
+            "What happens when microbes talk to your brain?",
+            "Trillions of bacteria, viruses, and fungi live inside you, collectively known as the microbiome.",
+            "How Bacteria Rule Over Your Body \u2013 The Microbiome."
         ]
     },
     {
@@ -186,6 +211,11 @@
             "High-Authority Domain",
             "Scientifically Referenced"
         ],
-        "weaknesses": []
+        "weaknesses": [],
+        "content_chunks": [
+            "The Impact of Dietary Fiber on Gut Microbiota in Host Health and Disease.",
+            "Diet is not only essential to maintain human growth but also modulates and supports the microbial communities.",
+            "Type, quality, and origin of our food shape our gut microbes and affect their composition and function."
+        ]
     }
 ]

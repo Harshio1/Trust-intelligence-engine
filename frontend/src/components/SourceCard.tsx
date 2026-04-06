@@ -216,7 +216,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
 
               {/* Content Chunks (Dense List) */}
               <div className="flex flex-col gap-6 pt-5 border-t border-white/5">
-                 <SectionLabel icon={<Database size={14} />} label={`Provenance Data Fragments (${item.content_chunks.length})`} />
+                 <SectionLabel icon={<Database size={14} />} label={`Provenance Data Fragments (${item.content_chunks?.length || 0})`} />
                  <div className="grid grid-cols-1 gap-2">
                     {Array.isArray(item.content_chunks) && item.content_chunks.slice(0, 3).map((chunk: string, i: number) => (
                       <div key={i} className="p-4 bg-white/[0.01] border border-white/5 rounded-xl flex gap-4 group hover:bg-white/[0.02] transition-colors">
