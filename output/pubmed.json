@@ -1,0 +1,32 @@
+[
+    {
+        "source_url": "https://pubmed.ncbi.nlm.nih.gov/29902436/",
+        "source_type": "pubmed",
+        "author": "Makki K, Deehan EC, Walter J, Bäckhed F",
+        "published_date": "2018",
+        "language": "en",
+        "region": "global",
+        "topic_tags": [
+            "gut microbes",
+            "gut microbial",
+            "gut microbiota",
+            "dietary fiber",
+            "fiber gut"
+        ],
+        "trust_score": 0.68,
+        "trust_breakdown": {
+            "author_credibility": 0.6,
+            "citation_count": 1.0,
+            "domain_authority": 1.0,
+            "recency": 0.449,
+            "medical_disclaimer": 0.0,
+            "content_quality": 0.24
+        },
+        "trust_explanation": "STRENGTHS: Identified named authorship. | Primary clinical/governmental medical authority domain. | Sourced from peer-reviewed scientific database. || WEAKNESSES: Missing explicit medical disclaimer / professional advisory. | Short/Brief content may lack depth.",
+        "confidence_score": 1.0,
+        "content_chunks": [
+            "The Impact of Dietary Fiber on Gut Microbiota in Host Health and Disease.",
+            "Food is a primordial need for our survival and well-being. However, diet is not only essential to maintain human growth, reproduction, and health, but it also modulates and supports the symbiotic microbial communities that colonize the digestive tract-the gut microbiota. Type, quality, and origin of our food shape our gut microbes and affect their composition and function, impacting host-microbe interactions. In this review, we will focus on dietary fibers, which interact directly with gut microbes and lead to the production of key metabolites such as short-chain fatty acids, and discuss how dietary fiber impacts gut microbial ecology, host physiology, and health. Hippocrates' notion \"Let food be thy medicine and medicine be thy food\" remains highly relevant millennia later, but requires consideration of how diet can be used for modulation of gut microbial ecology to promote health."
+        ]
+    }
+]

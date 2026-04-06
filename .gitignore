@@ -16,9 +16,7 @@ dist-ssr/
 *.log
 scrape_log.txt
 
-# Project specific
-output/
-scraped_data/
+# Project specific - Keep output for submission
 yt_sample.html
 yt_sample_large.html
 
