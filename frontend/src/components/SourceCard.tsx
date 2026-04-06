@@ -24,7 +24,7 @@ interface SourceCardProps {
 export const SourceCard = ({ item }: SourceCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
-  const score = item.trust_score
+  const score = item?.trust_score ?? 0
 
   const getStatusClass = (s: number) => {
     if (s >= 0.8) return 'status-high'
@@ -90,8 +90,8 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                       </span>
                     )}
                 </div>
-                <h2 className="text-xl font-black tracking-tight text-white/90">
-                    {item.author}
+                <h2 className="text-xl font-black tracking-tight text-white/90 line-clamp-1" title={item?.title || item?.author || "Unknown Source"}>
+                    {item?.title || item?.author || "Unknown Source"}
                 </h2>
             </div>
           </div>
@@ -100,7 +100,7 @@ export const SourceCard = ({ item }: SourceCardProps) => {
             <div className="flex flex-col items-end">
                 <span className="text-[9px] font-black uppercase tracking-widest text-white/20">Trust Reliability</span>
                 <span className={`text-2xl font-black tracking-tighter ${getStatusClass(score).split(' ')[0]}`}>
-                    {score.toFixed(2)}
+                    {(Number(score) || 0).toFixed(2)}
                 </span>
             </div>
             <div className="h-8 w-[1px] bg-white/10" />
@@ -118,10 +118,10 @@ export const SourceCard = ({ item }: SourceCardProps) => {
 
         {/* Unified Utility Row (Combined Info & Tags) */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-           <div className="flex items-center gap-8 border-r border-white/5 pr-8">
-              <UtilityItem label="DATE" value={item.published_date} icon={<Clock size={12} />} />
-              <UtilityItem label="LANG" value={item.language?.toUpperCase() || 'EN'} icon={<Globe size={12} />} />
-              <UtilityItem label="REGION" value={item.region || 'GLOBAL'} icon={<Info size={12} />} />
+           <div className="flex flex-wrap items-center gap-8 border-r border-white/5 pr-8">
+              <UtilityItem label="AUTHOR" value={item?.author || 'Anonymous'} icon={<Info size={12} />} />
+              <UtilityItem label="DATE" value={item?.published_date || 'Unknown'} icon={<Clock size={12} />} />
+              <UtilityItem label="REGION" value={item?.region || 'GLOBAL'} icon={<Globe size={12} />} />
            </div>
 
            <div className="flex flex-wrap gap-2 flex-grow px-4">
@@ -168,17 +168,17 @@ export const SourceCard = ({ item }: SourceCardProps) => {
                   )}
 
                   <div className="grid grid-cols-2 gap-x-10 gap-y-4">
-                    {item.trust_breakdown && Object.entries(item.trust_breakdown).map(([key, val]: any, i) => (
+                    {item?.trust_breakdown && Object.entries(item.trust_breakdown).map(([key, val]: any, i) => (
                       <div key={i} className="flex flex-col gap-2">
                         <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-white/20">
                           <span>{key.replace('_', ' ')}</span>
-                          <span className="text-white/40">{(val as number).toFixed(2)}</span>
+                          <span className="text-white/40">{(Number(val) || 0).toFixed(2)}</span>
                         </div>
                         <div className="h-1 bg-white/5 rounded-full overflow-hidden">
                           <motion.div 
                             initial={{ width: 0 }}
-                            animate={{ width: `${(val as number) * 100}%` }}
-                            className={`h-full ${getStatusBg(val as number)}`}
+                            animate={{ width: `${(Number(val) || 0) * 100}%` }}
+                            className={`h-full ${getStatusBg(Number(val) || 0)}`}
                           />
                         </div>
                       </div>
