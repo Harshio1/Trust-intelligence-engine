@@ -39,14 +39,16 @@ def extract_tags(text: str, top_n: int = 5) -> List[str]:
                 stop_words='english', 
                 top_n=top_n
             )
-            return [kw[0] for kw in keywords]
-        except Exception as e:
-            print(f"KeyBERT runtime failure: {e}. Defaulting to frequency heuristic.")
+            return [kw[0].upper() for kw in keywords]
+        except:
+            pass
 
     # FALLBACK: Heuristic Frequency-based Tagging
     try:
         # Filter symbols but keep tokens clean
-        words = ''.join(c if c.isalnum() else ' ' for c in text.lower()).split()
+        # IMPORTANT: Replace hyphens and underscores with spaces to break up IDs
+        clean_text = text.replace('-', ' ').replace('_', ' ')
+        words = ''.join(c if c.isalnum() else ' ' for c in clean_text.lower()).split()
         
         # Comprehensive noise list (media patterns, URL remnants, common stopwords)
         media_noise = {
@@ -55,7 +57,7 @@ def extract_tags(text: str, top_n: int = 5) -> List[str]:
             'signs', 'damage', 'using', 'going', 'doing', 'things', 'about', 'just', 'more', 'even',
             'title', 'youtube', 'transcript', 'published', 'posted', 'written', 'medical', 'reviewed',
             'source', 'available', 'visit', 'check', 'link', 'below', 'titled', 'unavailable',
-            'http', 'https', 'www', 'com', 'youtu', 'be', 'html'
+            'http', 'https', 'www', 'com', 'youtu', 'be', 'html', 'polymer', 'initialdata', 'ytinitial'
         }
         
         # Enhanced filter to ignore tokens that match typical YouTube video IDs (11 chars Alphanumeric mix)
@@ -64,7 +66,7 @@ def extract_tags(text: str, top_n: int = 5) -> List[str]:
             w for w in words 
             if w not in media_noise 
             and len(w) > 3 
-            and not (len(w) == 11 and any(c.isdigit() for c in w) and any(c.isalpha() for c in w))
+            and not (len(w) >= 10 and len(w) <= 12 and any(c.isdigit() for c in w) and any(c.isalpha() for c in w))
             and not any(x in w for x in ['.com', 'http', 'www', 'https'])
         ]
         
@@ -74,7 +76,6 @@ def extract_tags(text: str, top_n: int = 5) -> List[str]:
             
         # Return top N keywords by frequency
         sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)
-        return [word for word, count in sorted_counts[:top_n]]
-    except Exception as e:
-        print(f"Frequency heuristic failed: {e}")
+        return [word.upper() for word, count in sorted_counts[:top_n]]
+    except:
         return []

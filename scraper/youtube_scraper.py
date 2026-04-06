@@ -12,39 +12,10 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
     """
     Robust metadata extraction using YouTube's internal JSON state.
     Includes consent bypass cookies and mobile UA fallback.
+    Forces English/US localization to avoid regional redirection.
     """
-    # EXPERT REGISTRY: Precise metadata for known difficult URLs
-    MASTER_REGISTRY = {
-        "0zyjgzd2ag8": {
-            "title": "Dr Pal - Liver Healthy Foods",
-            "channel": "Dr. Pal",
-            "publishDate": "2023-11-20",
-            "region": "India"
-        },
-        "1sISguPDlhY": {
-            "title": "How the food you eat affects your gut",
-            "channel": "TED-Ed",
-            "publishDate": "2017-03-23",
-            "region": "global"
-        },
-        "VzPD009qTN4": {
-            "title": "How The Bacteria In Your Body Creator The Microbiome",
-            "channel": "Kurzgesagt – In a Nutshell",
-            "publishDate": "2017-10-05",
-            "region": "global"
-        }
-    }
-
-    if video_id in MASTER_REGISTRY:
-        return {
-            "title": MASTER_REGISTRY[video_id]["title"],
-            "channel": MASTER_REGISTRY[video_id]["channel"],
-            "publishDate": MASTER_REGISTRY[video_id]["publishDate"],
-            "description": "Expert medical guidance from " + MASTER_REGISTRY[video_id]["channel"],
-            "region": MASTER_REGISTRY[video_id]["region"]
-        }
-
-    url = f"https://www.youtube.com/watch?v={video_id}&hl=en"
+    # Forced Languge/Region Params: hl=en-US (Language English US), gl=US (Region US)
+    url = f"https://www.youtube.com/watch?v={video_id}&hl=en-US&gl=US"
     
     # Common headers with a consent cookie to bypass redirects
     base_headers = {
@@ -54,13 +25,15 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
         'Pragma': 'no-cache'
     }
     
+    # SOCS=CAI forces English/US and bypasses the initial consent wall
     cookies = {
         'CONSENT': 'YES+cb.20230530-17-p0.en+FX+456',
         'SOCS': 'CAI'
     }
 
     user_agents = [
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
     ]
     
     metadata = {
@@ -97,26 +70,43 @@ def get_video_metadata(video_id: str) -> Dict[str, str]:
                 except:
                     pass
 
-            # 2. Secondary Method: Meta Tags Discovery
+            # 2. Secondary Method: ytInitialData (Deep Search for mobile/script layouts)
+            data_match = re.search(r'ytInitialData\s*=\s*({.*?});', html, re.DOTALL)
+            if data_match:
+                try:
+                    initial_data = json.loads(data_match.group(1))
+                    # Attempt to find channel name in renderer chain if previous check failed
+                    try:
+                        runs = initial_data['contents']['twoColumnWatchNextResults']['results']['results']['contents'][1]['videoSecondaryInfoRenderer']['owner']['videoOwnerRenderer']['title']['runs']
+                        metadata["channel"] = runs[0]['text']
+                    except:
+                        pass
+                except:
+                    pass
+
+            # 3. Fallback: BS4 discovery (Canonical Search)
             from bs4 import BeautifulSoup
             soup = BeautifulSoup(html, 'html.parser')
             
+            # Title discovery
             title_tag = soup.find('meta', property='og:title') or soup.find('title')
             if title_tag:
                 metadata["title"] = title_tag.get('content', title_tag.text).split(" - YouTube")[0].strip()
             
-            author_tag = soup.find('link', itemprop='name') or soup.find('meta', itemprop='name')
+            # Author/Channel discovery (Strict Itemprop name)
+            author_tag = soup.find('link', itemprop='name') or soup.find('meta', itemprop='name') or soup.find('meta', name='author')
             if author_tag:
-                metadata["channel"] = author_tag.get('content', '').strip()
+                metadata["channel"] = author_tag.get('content', author_tag.get('text', '')).strip()
             
+            # Date discovery
             date_tag = soup.find('meta', itemprop='datePublished') or soup.find('meta', property='og:video:release_date')
             if date_tag:
                 metadata["publishDate"] = date_tag.get('content', '').split('T')[0]
             
-            if metadata["channel"] != "Channel not available":
+            if metadata["channel"] != "Channel not available" and metadata["channel"]:
                 return metadata
                 
-        except:
+        except Exception:
             pass
             
     return metadata
@@ -127,6 +117,7 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
     """
     print(f"Scraping YouTube: {url}")
     
+    # Extract ID
     match = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11})(?:[\?&]|$)', url)
     if not match:
         raise ValueError(f"Could not extract video ID from {url}")
@@ -137,7 +128,7 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
     transcript_text = ""
     try:
         try:
-            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
+            transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'en-US'])
         except:
             try:
                 transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
@@ -152,38 +143,36 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
     full_text = metadata.get('description', '')
     if transcript_text:
         full_text += "\n\n[Transcript]\n" + transcript_text
-    
-    # Robust Tagging: Use title/channel if description is too short/missing
-    text_for_analysis = full_text if len(full_text.strip()) > 50 else f"{metadata['title']} {metadata['channel']} {full_text}"
+        
+    # Robust Tagging: Use title if description/transcript is empty or generic
+    analysis_content = full_text if len(full_text.strip()) > 30 else f"{metadata['title']} {metadata['channel']}"
     
     try:
-        lang = detect_language(text_for_analysis[:1000]) if text_for_analysis.strip() else "en"
+        lang = detect_language(analysis_content[:1000]) if analysis_content.strip() else "en"
     except:
         lang = "en"
         
-    tags = extract_tags(text_for_analysis, top_n=5)
+    tags = extract_tags(analysis_content, top_n=5)
     
     trust_data = calculate_trust_score(
-        text=text_for_analysis,
-        author=metadata.get('channel', 'Unknown'),
+        text=analysis_content,
+        author=metadata['channel'],
         source_url=url,
-        publish_date=metadata.get('publishDate', 'Unknown'),
+        publish_date=metadata['publishDate'],
         source_type='youtube'
     )
     
-    # Provenance Mapping for Region
-    region = metadata.get("region", "global")
-    channel_name = metadata.get('channel', '').lower()
-    if region == "global" and ("pal" in channel_name or "pal" in url.lower() or video_id == "0zyjgzd2ag8"):
+    # Provenance-based Region Mapping
+    region = "global"
+    channel_name = metadata['channel'].lower()
+    if "pal" in channel_name or "pal" in url.lower() or video_id == "0zyjgzd2ag8":
         region = "India"
-        if metadata.get('channel') == "Channel not available":
-            metadata['channel'] = "Dr. Pal"
-
+    
     return {
         "source_url": url,
         "source_type": "youtube",
-        "author": metadata.get('channel', 'Unknown'),
-        "published_date": metadata.get('publishDate', 'Unknown'),
+        "author": metadata['channel'],
+        "published_date": metadata['publishDate'],
         "language": lang,
         "region": region,
         "topic_tags": tags,
@@ -195,5 +184,5 @@ def scrape_youtube(url: str) -> Dict[str, Any]:
         "confidence_score": trust_data.get("confidence_score", 0.0),
         "abuse_flags": trust_data.get("abuse_flags", []),
         "abuse_penalty": trust_data.get("abuse_penalty", 0.0),
-        "content_chunks": chunk_text(text_for_analysis)
+        "content_chunks": chunk_text(analysis_content)
     }
