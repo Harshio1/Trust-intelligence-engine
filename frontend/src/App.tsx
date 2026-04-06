@@ -115,7 +115,7 @@ export default function App() {
     const blob = new Blob([JSON.stringify(sources, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url; a.download = 'gutbut_master_registry.json'; a.click()
+    a.href = url; a.download = 'trust_master_registry.json'; a.click()
   }
 
   const toggleSource = (type: string) => {
@@ -147,12 +147,11 @@ export default function App() {
           <div className="flex flex-col gap-8 relative z-10 w-3/5">
             <div className="flex items-center gap-3 text-[#00c9ff] font-black uppercase text-[10px] tracking-[0.4em]">
               <ShieldCheck size={16} />
-              <span>Bio-Intelligence Analytics Core v2.0</span>
+              <span>Bio-Intelligence Analytics Core</span>
             </div>
             
             <div className="flex flex-col gap-2">
               <h1 className="text-7xl font-black tracking-tighter leading-[0.9] text-white">
-                GutBut <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00c9ff] via-[#00f2fe] to-white/10 uppercase italic">Trust Intelligence Engine</span>
               </h1>
               <p className="text-sm text-white/30 max-w-lg font-medium leading-relaxed tracking-tight border-l border-white/10 pl-6 my-2 uppercase">
@@ -296,7 +295,7 @@ export default function App() {
         </main>
 
         <footer className="py-10 border-t border-white/5 flex justify-between items-center text-label text-white/5">
-            <span>© 2026 GutBut Trust Intelligence Engine</span>
+            <span>© 2026 Trust Intelligence Engine</span>
             <div className="flex gap-8">
                 <span className="flex items-center gap-2 tracking-[0.2em]"><Globe size={10} /> Validated Registry</span>
                 <span className="flex items-center gap-2 tracking-[0.2em]"><ShieldCheck size={10} /> Integrity Enforced</span>

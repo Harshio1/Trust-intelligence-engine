@@ -24,8 +24,8 @@ export const Sidebar = ({ selectedSources, setSelectedSources, minTrust, setMinT
           <Database size={32} />
         </div>
         <div className="flex flex-col items-center">
-          <span className="text-xl font-bold tracking-tighter text-white">GutBut <span className="text-white/20 italic">Explorer</span></span>
-          <span className="text-[10px] font-semibold uppercase text-white/20 tracking-widest">V 2.5 Diagnostic</span>
+          <span className="text-xl font-bold tracking-tighter text-white">Trust <span className="text-white/20 italic">Explorer</span></span>
+          <span className="text-[10px] font-semibold uppercase text-white/20 tracking-widest">Diagnostic Analytical Core</span>
         </div>
       </div>
 
