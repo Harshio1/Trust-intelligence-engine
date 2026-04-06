@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: gutbut-api
+    name: trust-intelligence-api
     runtime: python
     rootDir: .
     buildCommand: pip install -r requirements.txt
@@ -11,7 +11,7 @@ services:
       - key: PORT
         value: 10000
   - type: web
-    name: gutbut-frontend
+    name: trust-intelligence-frontend
     runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
@@ -22,4 +22,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://gutbut-api.onrender.com
+        value: https://trust-intelligence-api.onrender.com
