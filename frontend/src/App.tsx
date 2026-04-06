@@ -32,19 +32,26 @@ export default function App() {
 
   useEffect(() => {
     const fetchData = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 15000);
+
       try {
-        const res = await axios.get(`${BASE_URL}/api/scraped`)
-        const data = res.data
-        setSources(Array.isArray(data) ? data : [])
+        const response = await fetch(`${BASE_URL}/api/scraped`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const data = await response.json();
+        setSources(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error('Error fetching data:', err)
-        setSources([])
+        clearTimeout(timeout);
+        console.error('Error fetching data or timeout:', err);
+        setSources([]);
       } finally {
-        setTimeout(() => setLoading(false), 800) // Smooth intro
+        setLoading(false);
       }
-    }
-    fetchData()
-  }, [])
+    };
+    fetchData();
+  }, []);
 
   const handleAnalyze = async (e: React.FormEvent) => {
     e.preventDefault()
