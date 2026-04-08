@@ -31,15 +31,38 @@ def save_json(data, filepath):
     with open(filepath, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
+# AUTHORITATIVE 6-SOURCE LIST (Must persist)
+EXPERT_SOURCES = [
+    "https://my.clevelandclinic.org/health/body/25201-gut-microbiome",
+    "https://www.healthline.com/nutrition/gut-microbiome-and-health",
+    "https://www.medicalnewstoday.com/articles/323093",
+    "https://www.youtube.com/watch?v=1sISguPDlhY",
+    "https://www.youtube.com/watch?v=VzPD009qTN4",
+    "https://pubmed.ncbi.nlm.nih.gov/29902436/"
+]
+
 def main():
     print("Starting Multi-source Data Ingestion + Trust Scoring Pipeline")
     
     output_dir = "scraped_data"
     os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, "scraped_data.json")
+
+    # 0. Load existing data to preserve if scrape fails
+    existing_data_map = {}
+    if os.path.exists(output_path):
+        try:
+            with open(output_path, 'r', encoding='utf-8') as f:
+                raw = json.load(f)
+                if isinstance(raw, list):
+                    existing_data_map = {s['source_url']: s for s in raw if 'source_url' in s}
+        except Exception:
+            pass
     
     # 1. Scrape Blogs (Target: 3)
     print("\n--- Phase 1: Scraping Blogs ---")
     blog_data = []
+    # PRIORITIZE EXPERT SOURCES FIRST
     for url in BLOG_SOURCES:
         if len(blog_data) >= 3: break
         try:
@@ -48,8 +71,14 @@ def main():
             if data and data.get("content_chunks"):
                 blog_data.append(data)
                 print(f"✅ Successfully scraped Blog: {url} (Author: {data['author']})")
+            else:
+                raise ValueError("Incomplete data")
         except Exception as e:
-            print(f"❌ Error scraping blog {url}: {e}")
+            if url in EXPERT_SOURCES and url in existing_data_map:
+                blog_data.append(existing_data_map[url])
+                print(f"♻️  Preserved PERSISTENT Expert Blog: {url} (Scrape failed: {e})")
+            else:
+                print(f"❌ Error scraping blog {url}: {e}")
             
     # 2. Scrape YouTube (Target: 2)
     print("\n--- Phase 2: Scraping YouTube ---")
@@ -61,8 +90,14 @@ def main():
             if data:
                 youtube_data.append(data)
                 print(f"✅ Successfully scraped YouTube: {url}")
+            else:
+                raise ValueError("Incomplete data")
         except Exception as e:
-            print(f"❌ Error scraping YouTube {url}: {e}")
+            if url in EXPERT_SOURCES and url in existing_data_map:
+                youtube_data.append(existing_data_map[url])
+                print(f"♻️  Preserved PERSISTENT Expert YouTube: {url} (Scrape failed: {e})")
+            else:
+                print(f"❌ Error scraping YouTube {url}: {e}")
             
     # 3. Scrape PubMed (Target: 1)
     print("\n--- Phase 3: Scraping PubMed ---")
@@ -74,8 +109,14 @@ def main():
             if data:
                 pubmed_data.append(data)
                 print(f"✅ Successfully scraped PubMed: {url}")
+            else:
+                raise ValueError("Incomplete data")
         except Exception as e:
-            print(f"❌ Error scraping PubMed {url}: {e}")
+            if url in EXPERT_SOURCES and url in existing_data_map:
+                pubmed_data.append(existing_data_map[url])
+                print(f"♻️  Preserved PERSISTENT Expert PubMed: {url} (Scrape failed: {e})")
+            else:
+                print(f"❌ Error scraping PubMed {url}: {e}")
             
     # 4. Final Validation & Combine
     print("\n--- Phase 4: Final Validation ---")
@@ -84,7 +125,7 @@ def main():
     print(f"PubMed: {len(pubmed_data)} / 1")
     
     combined_data = blog_data + youtube_data + pubmed_data
-    save_json(combined_data, os.path.join(output_dir, "scraped_data.json"))
+    save_json(combined_data, output_path)
     
     # 5. Logging Abuse Metrics
     print("\n--- Phase 5: Abuse Prevention Audit ---")

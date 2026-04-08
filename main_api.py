@@ -38,22 +38,44 @@ EXPERT_SOURCES = [
 class AnalyzeRequest(BaseModel):
     url: str
 
-# Session-persistent registry
+BASELINE_PATH = os.path.join("scraped_data", "expert_baseline.json")
+
+# Session-persistent registry with hard-coded durability
 def load_registry() -> List[Dict[str, Any]]:
+    registry = []
+    
+    # 1. Load the baseline (Absolute persistence for the 6 core sources)
+    if os.path.exists(BASELINE_PATH):
+        try:
+            with open(BASELINE_PATH, "r", encoding="utf-8") as f:
+                registry = json.load(f)
+        except Exception as e:
+            print(f"Error loading baseline: {e}")
+    
+    # 2. Try to update with newer data from the dynamic file if available
     if os.path.exists(DATA_PATH):
         try:
             with open(DATA_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, list):
-                    # ABSOLUTE FILTER: Only allow the 6 pre-verified Expert Sources
-                    # This permanently purges stale entries like 'NHS' or 'Unknown' blogs.
-                    return [
-                        s for s in data 
-                        if s.get('source_url') in EXPERT_SOURCES
-                    ]
+                dynamic_data = json.load(f)
+                if isinstance(dynamic_data, list):
+                    # Map existing registry by URL for easy patching
+                    reg_map = {s['source_url']: s for s in registry if 'source_url' in s}
+                    for s in dynamic_data:
+                        url = s.get('source_url')
+                        if url in EXPERT_SOURCES:
+                            # Only update if the new data is valid
+                            if s.get('content_chunks') and len(s.get('content_chunks')) > 0:
+                                reg_map[url] = s
+                    registry = list(reg_map.values())
         except Exception as e:
-            print(f"Error loading registry: {e}")
-    return []
+            print(f"Error patching registry with dynamic data: {e}")
+            
+    # ABSOLUTE FILTER: Only allow the 6 pre-verified Expert Sources
+    # This ensures "stale" or "unknown" entries from scraping never appear.
+    return [
+        s for s in registry 
+        if s.get('source_url') in EXPERT_SOURCES
+    ]
 
 # State for the current session
 active_registry = load_registry()
