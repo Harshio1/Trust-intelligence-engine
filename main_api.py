@@ -141,13 +141,15 @@ HARDCODED_BASELINE = [
     }
 ]
 
-# Session-persistent registry with hard-coded durability
+# Session-persistent registry with absolute hard-coded durability
 def load_registry() -> List[Dict[str, Any]]:
-    # Start with our absolute hardcoded fallback to ensure 24/7 visibility
-    registry = HARDCODED_BASELINE.copy()
-    reg_map = {s['source_url']: s for s in registry}
-    
-    # 1. Try to load and update from the baseline file (if it exists and is valid)
+    # 1. Initialize with DEEP COPIES of the hardcoded baseline to prevent memory pollution
+    # This ensures that even if we mutate things later, the baseline remains pristine.
+    registry_map = {}
+    for source in HARDCODED_BASELINE:
+        registry_map[source['source_url']] = json.loads(json.dumps(source))
+
+    # 2. Try to update from the baseline file (if it exists)
     if os.path.exists(BASELINE_PATH):
         try:
             with open(BASELINE_PATH, "r", encoding="utf-8") as f:
@@ -155,12 +157,13 @@ def load_registry() -> List[Dict[str, Any]]:
                 if isinstance(data, list):
                     for s in data:
                         url = s.get('source_url')
-                        if url in EXPERT_SOURCES:
-                            reg_map[url] = s
+                        # Only update if it's one of our expert sources and has required fields
+                        if url in EXPERT_SOURCES and s.get('trust_score') is not None:
+                            registry_map[url] = s
         except Exception as e:
-            print(f"Error loading baseline file: {e}")
-    
-    # 2. Try to update with newer data from the dynamic file if available
+            print(f"Non-critical: Failed to load baseline file: {e}")
+
+    # 3. Try to update with newer data from the dynamic scrape file if available
     if os.path.exists(DATA_PATH):
         try:
             with open(DATA_PATH, "r", encoding="utf-8") as f:
@@ -169,14 +172,26 @@ def load_registry() -> List[Dict[str, Any]]:
                     for s in dynamic_data:
                         url = s.get('source_url')
                         if url in EXPERT_SOURCES:
-                            # Only update if the new data is valid (must have content)
+                            # Only update if the new data is valid (must have content chunks)
                             if s.get('content_chunks') and len(s.get('content_chunks')) > 0:
-                                reg_map[url] = s
+                                # Ensure it has a trust score
+                                if s.get('trust_score') is not None:
+                                    registry_map[url] = s
         except Exception as e:
-            print(f"Error patching registry with dynamic data: {e}")
+            print(f"Non-critical: Failed to patch registry with dynamic data: {e}")
             
-    # Always return exactly the 6 expert sources, prioritizing newest valid data
-    return [reg_map[url] for url in EXPERT_SOURCES if url in reg_map]
+    # 4. GUARANTEE: Always return exactly the 6 expert sources in defined order
+    final_output = []
+    for url in EXPERT_SOURCES:
+        if url in registry_map:
+            final_output.append(registry_map[url])
+        else:
+            # Absolute fallback if somehow a key was lost (should be impossible now)
+            fallback = [s for s in HARDCODED_BASELINE if s['source_url'] == url]
+            if fallback:
+                final_output.append(fallback[0])
+    
+    return final_output
 
 @app.get("/api/scraped")
 async def get_scraped_data():

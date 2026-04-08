@@ -19,6 +19,15 @@ import {
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+const EXPERT_SOURCES_URLS = [
+  "https://my.clevelandclinic.org/health/body/25201-gut-microbiome",
+  "https://www.healthline.com/nutrition/gut-microbiome-and-health",
+  "https://www.medicalnewstoday.com/articles/323093",
+  "https://www.youtube.com/watch?v=1sISguPDlhY",
+  "https://www.youtube.com/watch?v=VzPD009qTN4",
+  "https://pubmed.ncbi.nlm.nih.gov/29902436/"
+];
+
 export default function App() {
   const [sources, setSources] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -32,26 +41,62 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let retryCount = 0;
+    const maxRetries = 3;
+
     const fetchData = async () => {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000);
+      const timeout = setTimeout(() => controller.abort(), 30000);
 
       try {
         const response = await fetch(`${BASE_URL}/api/scraped`, {
           signal: controller.signal
         });
+        
         clearTimeout(timeout);
+        if (!response.ok) throw new Error(`Server status ${response.status}`);
+        
         const data = await response.json();
-        setSources(Array.isArray(data) ? data : []);
-      } catch (err) {
+        if (Array.isArray(data) && data.length > 0) {
+          setSources(prev => {
+            // If we have no expert sources (only newly analyzed ones or none), merge them
+            const hasExpertSources = prev.some(s => EXPERT_SOURCES_URLS.includes(s.source_url));
+            if (!hasExpertSources) {
+              return [...prev, ...data];
+            }
+            return prev;
+          });
+          setError(null);
+          setLoading(false);
+        } else {
+          throw new Error("Empty registry");
+        }
+      } catch (err: any) {
         clearTimeout(timeout);
-        console.error('Error fetching data or timeout:', err);
-        setSources([]);
-      } finally {
-        setLoading(false);
+        if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(fetchData, retryCount * 2000);
+        } else {
+          setError("Connection lag detected. Retrying...");
+          setLoading(false);
+        }
       }
     };
+
     fetchData();
+
+    // Use a guarded interval that stops polling once we have the expert data
+    const interval = setInterval(() => {
+      setSources(current => {
+        const hasExpertSources = current.some(s => EXPERT_SOURCES_URLS.includes(s.source_url));
+        if (!hasExpertSources) {
+          fetchData();
+        }
+        return current;
+      });
+    }, 20000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleAnalyze = async (e: React.FormEvent) => {
