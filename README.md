@@ -1,5 +1,10 @@
 # GutBut Trust Intelligence Engine
 
+## 🌐 Live Demo
+
+The project is fully deployed and accessible at:
+👉 https://trust-intelligence-engine-1.onrender.com
+
 ## Overview
 The **GutBut Trust Intelligence Engine** is a comprehensive data pipeline and real-time analysis platform designed to evaluate the reliability of health and science content across the web. Developed for the Data Scraping & Trust Scoring assignment, the system ingests data from blogs, YouTube transcripts, and PubMed abstracts, applying a sophisticated mathematical model to generate a trust reliability score between 0.0 and 1.0.
 
