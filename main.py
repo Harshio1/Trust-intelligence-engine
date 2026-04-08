@@ -50,12 +50,31 @@ def main():
 
     # 0. Load existing data to preserve if scrape fails
     existing_data_map = {}
+    
+    # Priority 1: Current valid data
     if os.path.exists(output_path):
         try:
             with open(output_path, 'r', encoding='utf-8') as f:
                 raw = json.load(f)
                 if isinstance(raw, list):
-                    existing_data_map = {s['source_url']: s for s in raw if 'source_url' in s}
+                    for s in raw:
+                        if 'source_url' in s:
+                            existing_data_map[s['source_url']] = s
+        except Exception:
+            pass
+            
+    # Priority 2: Baseline data (Safeguard)
+    baseline_path = os.path.join(output_dir, "expert_baseline.json")
+    if os.path.exists(baseline_path):
+        try:
+            with open(baseline_path, 'r', encoding='utf-8') as f:
+                raw_baseline = json.load(f)
+                if isinstance(raw_baseline, list):
+                    for s in raw_baseline:
+                        url = s.get('source_url')
+                        # Only use baseline if we don't already have it in existing_data_map
+                        if url and url not in existing_data_map:
+                            existing_data_map[url] = s
         except Exception:
             pass
     
